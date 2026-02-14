@@ -2,10 +2,10 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>Haki Werda 3D Fix</title>
+    <title>Haki Werda 3D Final Fix</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
-        #title { position: absolute; top: 20px; width: 100%; text-align: center; color: #ff0a54; font-size: 2rem; z-index: 100; text-shadow: 0 0 10px #ff0a54; }
+        body { margin: 0; background: #050505; overflow: hidden; font-family: sans-serif; }
+        #title { position: absolute; top: 20px; width: 100%; text-align: center; color: #ff0a54; font-size: 2.5rem; z-index: 100; text-shadow: 0 0 15px #ff0a54; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -14,38 +14,93 @@
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
 
     <script>
-        // هاد الكود غيتأكد واش المكتبة تحملات ولا لا
         window.onload = function() {
-            if (typeof THREE === 'undefined') {
-                document.body.innerHTML = "<h1 style='color:white; text-align:center; padding-top:50px;'>المكتبة لم تتحمل! تأكد من الأنترنت أو جرب متصفح آخر</h1>";
-                return;
-            }
-
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            // إضاءة قوية باش يبان كولشي
-            const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-            scene.add(ambientLight);
-            
-            // وردة حمراء (كورة 3D) للتجربة الأولى
-            const geo = new THREE.TorusKnotGeometry(1, 0.3, 100, 16);
-            const mat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-            const mesh = new THREE.Mesh(geo, mat);
-            scene.add(mesh);
+            // إضاءة قوية
+            const light = new THREE.PointLight(0xffffff, 1.5, 100);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x404040, 2));
 
-            camera.position.z = 5;
+            // مجموعة الوردة
+            const flower = new THREE.Group();
+
+            // 1. الغصن (Stem)
+            const stem = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.06, 0.06, 4, 32),
+                new THREE.MeshStandardMaterial({ color: 0x1e3c1a })
+            );
+            flower.add(stem);
+
+            // 2. البتلات (Petals)
+            const petalGeo = new THREE.SphereGeometry(0.4, 32, 32);
+            petalGeo.scale(1, 1.6, 0.2);
+            const petalMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            for (let i = 0; i < 10; i++) {
+                const petal = new THREE.Mesh(petalGeo, petalMat);
+                const angle = (i / 10) * Math.PI * 2;
+                petal.position.set(Math.cos(angle) * 0.4, 2, Math.sin(angle) * 0.4);
+                petal.rotation.y = -angle;
+                petal.rotation.x = 0.6;
+                flower.add(petal);
+            }
+
+            // 3. قلب الوردة
+            const center = new THREE.Mesh(new THREE.SphereGeometry(0.3, 32, 32), new THREE.MeshStandardMaterial({color: 0xffd700}));
+            center.position.y = 2;
+            flower.add(center);
+
+            // 4. الأوراق (Leaves)
+            const leafGeo = new THREE.SphereGeometry(0.5, 32, 32);
+            leafGeo.scale(1, 0.1, 0.5);
+            const leafMat = new THREE.MeshStandardMaterial({ color: 0x2d5a27 });
+            const leaf1 = new THREE.Mesh(leafGeo, leafMat);
+            leaf1.position.set(0.6, 0.2, 0); leaf1.rotation.z = 0.5;
+            flower.add(leaf1);
+            const leaf2 = new THREE.Mesh(leafGeo, leafMat);
+            leaf2.position.set(-0.6, -0.5, 0); leaf2.rotation.z = -0.5;
+            flower.add(leaf2);
+
+            scene.add(flower);
+            flower.position.set(1.5, -1, 0);
+
+            // الراجل المجسم (Man)
+            const man = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.4, 1.2, 4, 16), new THREE.MeshStandardMaterial({color: 0x111111}));
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.35, 32, 32), new THREE.MeshStandardMaterial({color: 0xf7dcbb}));
+            head.position.y = 1.2;
+            man.add(body); man.add(head);
+            man.position.set(-2.5, -1, 0);
+            scene.add(man);
+
+            // النجوم في الخلفية
+            const starsGeo = new THREE.BufferGeometry();
+            const posArray = new Float32Array(1000 * 3);
+            for(let i=0; i<3000; i++) posArray[i] = (Math.random() - 0.5) * 20;
+            starsGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            const stars = new THREE.Points(starsGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.02}));
+            scene.add(stars);
+
+            camera.position.z = 7;
 
             function animate() {
                 requestAnimationFrame(animate);
-                mesh.rotation.y += 0.02;
-                mesh.rotation.x += 0.01;
+                flower.rotation.y += 0.01;
+                stars.rotation.y += 0.001;
                 renderer.render(scene, camera);
             }
             animate();
+
+            window.addEventListener('resize', () => {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+            });
         };
     </script>
 </body>
