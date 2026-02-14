@@ -1,78 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>Haki Werda 3D Final</title>
+    <title>Haki Werda 3D Fix</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; }
-        #text { position: absolute; top: 20px; width: 100%; text-align: center; color: #ff0a54; font-family: sans-serif; font-size: 30px; z-index: 10; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        #title { position: absolute; top: 20px; width: 100%; text-align: center; color: #ff0a54; font-size: 2rem; z-index: 100; text-shadow: 0 0 10px #ff0a54; }
     </style>
 </head>
 <body>
-    <div id="text">HAKI WERDA ALWREDA</div>
+    <div id="title">HAKI WERDA ALWREDA</div>
+
     <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+
     <script>
+        // هاد الكود غيتأكد واش المكتبة تحملات ولا لا
         window.onload = function() {
+            if (typeof THREE === 'undefined') {
+                document.body.innerHTML = "<h1 style='color:white; text-align:center; padding-top:50px;'>المكتبة لم تتحمل! تأكد من الأنترنت أو جرب متصفح آخر</h1>";
+                return;
+            }
+
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            // إضاءة
-            const light = new THREE.PointLight(0xffffff, 1.5, 100);
-            light.position.set(5, 5, 5);
-            scene.add(light);
-            scene.add(new THREE.AmbientLight(0x404040, 2));
-
-            // صنع الوردة
-            const flowerGroup = new THREE.Group();
+            // إضاءة قوية باش يبان كولشي
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+            scene.add(ambientLight);
             
-            // 1. الغصن
-            const stem = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.05, 0.05, 4, 32),
-                new THREE.MeshStandardMaterial({ color: 0x1e3c1a })
-            );
-            flowerGroup.add(stem);
+            // وردة حمراء (كورة 3D) للتجربة الأولى
+            const geo = new THREE.TorusKnotGeometry(1, 0.3, 100, 16);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            const mesh = new THREE.Mesh(geo, mat);
+            scene.add(mesh);
 
-            // 2. البتلات (حمرة)
-            const petalMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-            for (let i = 0; i < 12; i++) {
-                const petal = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), petalMat);
-                petal.scale.set(1, 1.6, 0.2);
-                const angle = (i / 12) * Math.PI * 2;
-                petal.position.set(Math.cos(angle) * 0.4, 2, Math.sin(angle) * 0.4);
-                petal.rotation.y = -angle;
-                petal.rotation.x = 0.6;
-                flowerGroup.add(petal);
-            }
-
-            // 3. قلب الوردة
-            const center = new THREE.Mesh(new THREE.SphereGeometry(0.3, 32, 32), new THREE.MeshStandardMaterial({color: 0xffd700}));
-            center.position.y = 2;
-            flowerGroup.add(center);
-
-            scene.add(flowerGroup);
-            flowerGroup.position.set(1.5, -1, 0);
-
-            // 4. الراجل 3D
-            const man = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.4, 1.2, 4, 16), new THREE.MeshStandardMaterial({color: 0x111111}));
-            const head = new THREE.Mesh(new THREE.SphereGeometry(0.35, 32, 32), new THREE.MeshStandardMaterial({color: 0xf7dcbb}));
-            head.position.y = 1.2;
-            man.add(body); man.add(head);
-            man.position.set(-2, -1, 0);
-            scene.add(man);
-
-            camera.position.z = 6;
+            camera.position.z = 5;
 
             function animate() {
                 requestAnimationFrame(animate);
-                flowerGroup.rotation.y += 0.02; // الوردة كتدور
+                mesh.rotation.y += 0.02;
+                mesh.rotation.x += 0.01;
                 renderer.render(scene, camera);
             }
             animate();
         };
     </script>
 </body>
-</html>  
+</html>
