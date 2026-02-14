@@ -2,92 +2,51 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>Haki Werda 3D Final</title>
+    <title>Haki Werda 3D Fix</title>
     <style>
-        body { margin: 0; background-color: #000; overflow: hidden; }
-        #title {
-            position: absolute; top: 20px; width: 100%; text-align: center;
-            color: #ff0a54; font-size: 2rem; font-weight: bold;
-            text-shadow: 0 0 15px #ff0a54; z-index: 100;
-        }
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        #title { position: absolute; top: 20px; width: 100%; text-align: center; color: #ff0a54; font-size: 2rem; z-index: 100; text-shadow: 0 0 10px #ff0a54; }
     </style>
 </head>
 <body>
     <div id="title">HAKI WERDA ALWREDA</div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
 
     <script>
-        // كود الـ 3D
-        let scene, camera, renderer, flower, stars;
+        // هاد الكود غيتأكد واش المكتبة تحملات ولا لا
+        window.onload = function() {
+            if (typeof THREE === 'undefined') {
+                document.body.innerHTML = "<h1 style='color:white; text-align:center; padding-top:50px;'>المكتبة لم تتحمل! تأكد من الأنترنت أو جرب متصفح آخر</h1>";
+                return;
+            }
 
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
 
-            // الإضاءة
-            const light = new THREE.PointLight(0xffffff, 1.2, 100);
-            light.position.set(5, 5, 5);
-            scene.add(light);
-            scene.add(new THREE.AmbientLight(0x404040, 1.5));
-
-            // صنع الوردة
-            flower = new THREE.Group();
+            // إضاءة قوية باش يبان كولشي
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+            scene.add(ambientLight);
             
-            // الغصن
-            const stem = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.05, 0.05, 4, 32),
-                new THREE.MeshStandardMaterial({ color: 0x1e3c1a })
-            );
-            flower.add(stem);
+            // وردة حمراء (كورة 3D) للتجربة الأولى
+            const geo = new THREE.TorusKnotGeometry(1, 0.3, 100, 16);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            const mesh = new THREE.Mesh(geo, mat);
+            scene.add(mesh);
 
-            // البتلات والأوراق
-            const petalMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-            for(let i=0; i<8; i++) {
-                const petal = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), petalMat);
-                petal.scale.set(1, 1.5, 0.2);
-                petal.position.y = 2;
-                petal.rotation.z = (i / 8) * Math.PI * 2;
-                petal.rotation.x = 0.5;
-                flower.add(petal);
+            camera.position.z = 5;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                mesh.rotation.y += 0.02;
+                mesh.rotation.x += 0.01;
+                renderer.render(scene, camera);
             }
-
-            scene.add(flower);
-            flower.position.y = -1;
-
-            // النجوم
-            const starsGeo = new THREE.BufferGeometry();
-            const starsCount = 500;
-            const pos = new Float32Array(starsCount * 3);
-            for(let i=0; i<starsCount*3; i++) pos[i] = (Math.random() - 0.5) * 20;
-            starsGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-            stars = new THREE.Points(starsGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.05}));
-            scene.add(stars);
-
-            camera.position.z = 6;
             animate();
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            flower.rotation.y += 0.01;
-            stars.rotation.y += 0.001;
-            renderer.render(scene, camera);
-        }
-
-        // تشغيل المشهد
-        init();
-
-        // تكييف الشاشة
-        window.addEventListener('resize', () => {
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-        });
+        };
     </script>
 </body>
 </html>
