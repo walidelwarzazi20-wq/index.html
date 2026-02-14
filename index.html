@@ -2,114 +2,91 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>Haki Werda 3D Experience</title>
+    <title>Haki Werda 3D Final</title>
     <style>
-        body { margin: 0; background-color: #050505; overflow: hidden; font-family: sans-serif; }
-        .message {
-            position: absolute; top: 30px; width: 100%; text-align: center;
-            color: #ff0a54; font-size: 2.5rem; font-weight: bold;
-            text-shadow: 0 0 20px #ff0a54; z-index: 10;
+        body { margin: 0; background-color: #000; overflow: hidden; }
+        #title {
+            position: absolute; top: 20px; width: 100%; text-align: center;
+            color: #ff0a54; font-size: 2rem; font-weight: bold;
+            text-shadow: 0 0 15px #ff0a54; z-index: 100;
         }
     </style>
 </head>
 <body>
-
-    <div class="message">HAKI WERDA ALWREDA</div>
-
+    <div id="title">HAKI WERDA ALWREDA</div>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        // 1. إعداد المشهد (Scene)
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+        // كود الـ 3D
+        let scene, camera, renderer, flower, stars;
 
-        // 2. الإضاءة (Lights)
-        const ambientLight = new THREE.AmbientLight(0x404040, 2); 
-        scene.add(ambientLight);
-        const pointLight = new THREE.PointLight(0xff0055, 2, 100);
-        pointLight.position.set(0, 5, 5);
-        scene.add(pointLight);
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
 
-        // 3. صنع الوردة 3D (الجزء المركزي)
-        const flowerGroup = new THREE.Group();
-        
-        // الغصن (Stem)
-        const stemGeometry = new THREE.CylinderGeometry(0.1, 0.1, 4, 32);
-        const stemMaterial = new THREE.MeshStandardMaterial({ color: 0x2d5a27 });
-        const stem = new THREE.Mesh(stemGeometry, stemMaterial);
-        stem.position.y = 0;
-        flowerGroup.add(stem);
+            // الإضاءة
+            const light = new THREE.PointLight(0xffffff, 1.2, 100);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x404040, 1.5));
 
-        // البتلات (Petals)
-        const petalGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-        petalGeometry.scale(1, 1.5, 0.2);
-        const petalMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            // صنع الوردة
+            flower = new THREE.Group();
+            
+            // الغصن
+            const stem = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.05, 4, 32),
+                new THREE.MeshStandardMaterial({ color: 0x1e3c1a })
+            );
+            flower.add(stem);
 
-        for (let i = 0; i < 8; i++) {
-            const petal = new THREE.Mesh(petalGeometry, petalMaterial);
-            const angle = (i / 8) * Math.PI * 2;
-            petal.position.set(Math.cos(angle) * 0.5, 2.2, Math.sin(angle) * 0.5);
-            petal.rotation.y = -angle;
-            petal.rotation.x = 0.5;
-            flowerGroup.add(petal);
+            // البتلات والأوراق
+            const petalMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            for(let i=0; i<8; i++) {
+                const petal = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), petalMat);
+                petal.scale.set(1, 1.5, 0.2);
+                petal.position.y = 2;
+                petal.rotation.z = (i / 8) * Math.PI * 2;
+                petal.rotation.x = 0.5;
+                flower.add(petal);
+            }
+
+            scene.add(flower);
+            flower.position.y = -1;
+
+            // النجوم
+            const starsGeo = new THREE.BufferGeometry();
+            const starsCount = 500;
+            const pos = new Float32Array(starsCount * 3);
+            for(let i=0; i<starsCount*3; i++) pos[i] = (Math.random() - 0.5) * 20;
+            starsGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            stars = new THREE.Points(starsGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.05}));
+            scene.add(stars);
+
+            camera.position.z = 6;
+            animate();
         }
 
-        // الأوراق (Leaves)
-        const leafGeometry = new THREE.SphereGeometry(0.4, 32, 32);
-        leafGeometry.scale(1, 0.2, 0.5);
-        const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x1e3c1a });
-        
-        const leaf1 = new THREE.Mesh(leafGeometry, leafMaterial);
-        leaf1.position.set(0.5, 0.5, 0);
-        leaf1.rotation.z = 0.5;
-        flowerGroup.add(leaf1);
-
-        const leaf2 = new THREE.Mesh(leafGeometry, leafMaterial);
-        leaf2.position.set(-0.5, -0.5, 0);
-        leaf2.rotation.z = -0.5;
-        flowerGroup.add(leaf2);
-
-        scene.add(flowerGroup);
-        flowerGroup.position.y = -1;
-
-        // 4. إنسان 3D بسيط (مجسم)
-        const manGroup = new THREE.Group();
-        const bodyGeo = new THREE.CapsuleGeometry(0.4, 1, 4, 16);
-        const manMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-        const body = new THREE.Mesh(bodyGeo, manMat);
-        manGroup.add(body);
-
-        const headGeo = new THREE.SphereGeometry(0.3, 32, 32);
-        const headMat = new THREE.MeshStandardMaterial({ color: 0xf7dcbb });
-        const head = new THREE.Mesh(headGeo, headMat);
-        head.position.y = 1;
-        manGroup.add(head);
-
-        manGroup.position.set(-4, -1, 0);
-        scene.add(manGroup);
-
-        camera.position.z = 7;
-
-        // 5. أنيميشن الحركة
         function animate() {
             requestAnimationFrame(animate);
-            
-            // تحريك الوردة ببطء (ميلان خفيف)
-            flowerGroup.rotation.y += 0.01;
-            flowerGroup.rotation.z = Math.sin(Date.now() * 0.001) * 0.05;
-            
+            flower.rotation.y += 0.01;
+            stars.rotation.y += 0.001;
             renderer.render(scene, camera);
         }
-        animate();
 
-        // التعامل مع حجم الشاشة
+        // تشغيل المشهد
+        init();
+
+        // تكييف الشاشة
         window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
